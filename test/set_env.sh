@@ -1,0 +1,5 @@
+export QUDA_RESOURCE_PATH=./
+export QUDA_ENABLE_TUNING=1
+
+
+
