@@ -19,7 +19,7 @@
 
 #include <communicator_quda.h>
 
-//#define LAUNCH_TIMER
+#define LAUNCH_TIMER
 //extern char *gitversion;
 #include <version.h>
 

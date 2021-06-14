@@ -245,7 +245,14 @@ int main(int argc, char **argv) {
    //
    std::cout << std::fixed << result << std::endl;
    
-   quda::reducer::destroy();   
+   quda::reducer::destroy();  
+//   
+   pool::flush_pinned();
+   pool::flush_device();
+   saveTuneCache();
+   saveProfile();
+//   
+    
    finalizeComms();
 
    return 0;	

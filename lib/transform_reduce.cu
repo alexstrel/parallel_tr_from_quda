@@ -20,11 +20,6 @@ namespace quda
 
     bool tuneSharedBytes() const { return false; }
 
-    bool advanceTuneParam(TuneParam &param) const // only do autotuning if we have device fields
-    {
-      return location == QUDA_CUDA_FIELD_LOCATION ? Tunable::advanceTuneParam(param) : false;
-    }
-
     void initTuneParam(TuneParam &param) const
     {
       Tunable::initTuneParam(param);
@@ -43,7 +38,6 @@ namespace quda
       init(init),
       r(r)
     {
-      warningQuda("Debug msg:: start transform reduce in Transform Reduce, transform_reduce.cu\n");    
       strcpy(aux, "batch_size=");
       u32toa(aux + 11, v.size());
       apply(device::get_default_stream());
@@ -51,7 +45,6 @@ namespace quda
 
     void apply(const qudaStream_t &stream)
     {
-      warningQuda("Apply transform reduce kernel, transform_reduce.cu\n");
       TuneParam tp = tuneLaunch(*this, getTuning(), getVerbosity());
       Arg arg(v, n_items, h, init, r);
       launch<transform_reducer, true>(result, tp, stream, arg);
@@ -194,8 +187,7 @@ namespace quda
 
   template float reduce<float, float, int, maximum<float>>(QudaFieldLocation, float const *, int, float, maximum<float>);
 
-  //////NEW
-  //float quda::transform_reduce<float, float, int, quda::identity<float>, quda::plus<float> >(QudaFieldLocation_s, float const*, int, quda::identity<float>, float, quda::plus<float>)
+  //NEW :
   template float transform_reduce<float, float, int, identity<float>, plus<float>>(
     QudaFieldLocation, float const *, int, identity<float>, float, plus<float>);
 
