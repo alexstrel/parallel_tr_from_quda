@@ -84,7 +84,7 @@ namespace quda
   template <typename reduce_t, typename T, typename I, typename reducer>
   reduce_t reduce(QudaFieldLocation location, const T *v, I n_items, reduce_t init, reducer r);
 
-  extern template float transform_reduce<float, float, int, identity<float>, plus<float>>(
-    QudaFieldLocation, float const *, int, identity<float>, float, plus<float>);
-
 } // namespace quda
+
+
+

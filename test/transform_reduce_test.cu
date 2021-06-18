@@ -208,10 +208,10 @@ void finalizeComms()
 int main(int argc, char **argv) {
    //
    profileInit2End.TPSTART(QUDA_PROFILE_TOTAL);
-#if 1      
+
    profileInit.TPSTART(QUDA_PROFILE_TOTAL);
    profileInit.TPSTART(QUDA_PROFILE_INIT);
-#endif
+
    std::cout << "Begin init: " << std::endl;
    initComms(argc, argv, gridsize_from_cmdline);
    
@@ -228,10 +228,9 @@ int main(int argc, char **argv) {
 
    quda::reducer::init();
    std::cout << "..done." << std::endl;   
-#if 1
+
    profileInit.TPSTOP(QUDA_PROFILE_INIT);
    profileInit.TPSTOP(QUDA_PROFILE_TOTAL);
-#endif
    
    constexpr int N = 1024*1024;	
    //
@@ -241,10 +240,21 @@ int main(int argc, char **argv) {
    QudaFieldLocation location = QUDA_CUDA_FIELD_LOCATION;
    //
    std::cout << "Begin transform reduce:: " << std::endl;
+#if 0   
    float result = quda::transform_reduce(location, x.data(), N, quda::identity<float>(), 0.0f, quda::plus<float>());  
    //
    std::cout << std::fixed << result << std::endl;
-   
+#else
+   //
+   std::vector<float*> x_;
+   x_.push_back(x.data());
+   //
+   std::vector<float> result(1);
+   quda::transform_reduce(location, result, x_, N, quda::identity<float>(), 0.0f, quda::plus<float>());
+   //
+   std::cout << std::fixed << result[0] << std::endl;
+   //
+#endif   
    quda::reducer::destroy();  
 //   
    pool::flush_pinned();
