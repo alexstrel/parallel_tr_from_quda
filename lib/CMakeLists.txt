@@ -28,8 +28,7 @@ set (QUDA_OBJS
   util_quda.cpp
   reduce_helper.cu
   comm_common.cpp communicator_stack.cpp
-  tune.cpp
-  transform_reduce.cu)
+  tune.cpp)
 # cmake-format: on
 
 # split source into cu and cpp files
