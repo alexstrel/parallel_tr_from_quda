@@ -27,7 +27,6 @@ set (QUDA_OBJS
   timer.cpp
   util_quda.cpp
   reduce_helper.cu
-  transform_reduce.cu
   comm_common.cpp communicator_stack.cpp
   tune.cpp)
 # cmake-format: on
@@ -163,6 +162,10 @@ if(QUDA_NVSHMEM)
 endif()
 
 # add target specific files		
+
+add_subdirectory(impl)
+target_include_directories(quda PRIVATE ../include)
+
 if(${QUDA_TARGET_TYPE} STREQUAL "CUDA")		
   add_subdirectory(targets/cuda)		
   target_include_directories(quda PRIVATE ../include/targets/cuda)

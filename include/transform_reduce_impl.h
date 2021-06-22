@@ -1,3 +1,4 @@
+#pragma once
 #include <reduce_helper.h>
 #include <transform_reduce.h>
 #include <tunable_reduction.h>
@@ -85,14 +86,4 @@ namespace quda
     transform_reduce(location, result, v_, n_items, identity<T>(), init, r);
     return result[0];
   }
-
-  // explicit instantiation list for transform_reduce
-
-  template float transform_reduce<float, float, int, identity<float>, plus<float>>(
-    QudaFieldLocation, float const *, int, identity<float>, float, plus<float>);
-
-  template void transform_reduce<float, float, int, identity<float>, plus<float>>(
-    QudaFieldLocation, std::vector<float> &, std::vector<float *> const &, int, identity<float>,
-    float, plus<float>);   
-
 } // namespace quda
