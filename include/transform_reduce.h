@@ -4,6 +4,7 @@
 #include <enum_quda.h>
 #include <complex_quda.h>
 #include <reducer.h>
+#include <extern/custom_reducer.h>
 
 
 /**

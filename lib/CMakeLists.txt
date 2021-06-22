@@ -27,6 +27,7 @@ set (QUDA_OBJS
   timer.cpp
   util_quda.cpp
   reduce_helper.cu
+  transform_reduce.cu
   comm_common.cpp communicator_stack.cpp
   tune.cpp)
 # cmake-format: on
