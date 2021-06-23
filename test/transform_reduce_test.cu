@@ -12,10 +12,10 @@
 #include <quda_api.h>
 #include <device.h>
 #include <timer.h>
-//#include <cuda_runtime.h>
-//#include <register_traits.h>
-//#include <complex_quda.h>
+//
 #include <transform_reduce.h>
+#include <reducer.h>
+#include <transformer.h>
 
 template<typename Tp>
 struct AlignedAllocator {

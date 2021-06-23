@@ -1,8 +1,22 @@
 #pragma once
 
-//custom reduction operations (DSL programming)
-
+// base reduction operations
 namespace quda {
+
+  template <typename T> struct plus {
+    static constexpr bool do_sum = true;
+    __device__ __host__ T operator()(T a, T b) const { return a + b; }
+  };
+
+  template <typename T> struct maximum {
+    static constexpr bool do_sum = false;
+    __device__ __host__ T operator()(T a, T b) const { return a > b ? a : b; }
+  };
+
+  template <typename T> struct minimum {
+    static constexpr bool do_sum = false;
+    __device__ __host__ T operator()(T a, T b) const { return a < b ? a : b; }
+  };
 
   template<typename ReduceType, typename Float> struct square_ {
     square_(ReduceType = 1.0) { }
@@ -57,5 +71,4 @@ namespace quda {
     __host__ __device__ Float operator()(const quda::complex<int> &x) const
     { return abs(scale * complex<Float>(x.real(), x.imag())); }
   };
-
 }

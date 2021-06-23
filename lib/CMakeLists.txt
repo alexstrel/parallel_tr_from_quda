@@ -163,9 +163,6 @@ endif()
 
 # add target specific files		
 
-add_subdirectory(impl)
-target_include_directories(quda PRIVATE ../include)
-
 if(${QUDA_TARGET_TYPE} STREQUAL "CUDA")		
   add_subdirectory(targets/cuda)		
   target_include_directories(quda PRIVATE ../include/targets/cuda)

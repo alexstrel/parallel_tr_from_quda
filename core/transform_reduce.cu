@@ -1,4 +1,7 @@
 #include <transform_reduce_impl.h>
+//implementations:
+#include <reducer.h>
+#include <transformer.h>
 
 namespace quda
 {
