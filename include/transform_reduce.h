@@ -3,8 +3,6 @@
 #include <vector>
 #include <enum_quda.h>
 #include <complex_quda.h>
-#include <reducer.h>
-
 
 /**
    @file transform_reduce.h

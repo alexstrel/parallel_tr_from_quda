@@ -528,7 +528,7 @@ include(CTest)
 
 # add tests, utils, reference, and quda library
 add_subdirectory(lib)
-add_subdirectory(core)
-target_include_directories(quda PRIVATE core/include)
+add_subdirectory(core/cuda)
+target_include_directories(quda PRIVATE core/cuda/include)
 #add_subdirectory(tests)
 #add_subdirectory(doc)

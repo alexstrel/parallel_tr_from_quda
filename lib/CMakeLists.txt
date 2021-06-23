@@ -26,7 +26,6 @@ set (QUDA_OBJS
   # cmake-format: sortable
   timer.cpp
   util_quda.cpp
-  reduce_helper.cu
   comm_common.cpp communicator_stack.cpp
   tune.cpp)
 # cmake-format: on
@@ -39,7 +38,7 @@ foreach(item ${QUDA_OBJS})
   endif(item_match)
 endforeach(item ${QUDA_OBJS})
 
-list(REMOVE_ITEM QUDA_OBJS ${QUDA_CU_OBJS})
+#list(REMOVE_ITEM QUDA_OBJS ${QUDA_CU_OBJS})
 
 # QUDA_CU_OBJS should contain all cuda files now QUDA_OBJS all c, cpp, fortran sources
 
@@ -166,6 +165,7 @@ endif()
 if(${QUDA_TARGET_TYPE} STREQUAL "CUDA")		
   add_subdirectory(targets/cuda)		
   target_include_directories(quda PRIVATE ../include/targets/cuda)
+  target_include_directories(quda PRIVATE ../include/kernels)  
   target_include_directories(quda SYSTEM PRIVATE ../include/targets/cuda/externals)
 endif()		
 if(${QUDA_TARGET_TYPE} STREQUAL "HIP")		

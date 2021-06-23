@@ -1,5 +1,5 @@
 # add target specific files / options
-target_sources(quda_cpp PRIVATE quda_api.cpp device.cpp malloc.cpp comm_target.cpp)
+target_sources(quda_cpp PRIVATE quda_api.cpp device.cpp malloc.cpp comm_target.cpp reduce_helper.cu)
 
 if(QUDA_BACKWARDS)
   set_property(SOURCE malloc.cpp DIRECTORY ${CMAKE_SOURCE_DIR}/lib APPEND PROPERTY COMPILE_DEFINITIONS ${BACKWARD_DEFINITIONS})
