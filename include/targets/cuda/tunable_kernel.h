@@ -4,9 +4,17 @@
 #include <target_device.h>
 #include <kernel_helper.h>
 #include <kernel.h>
-#include <quda_cuda_api.h>
 
 namespace quda {
+
+  /**
+     @brief Wrapper around cudaLaunchKernel
+     @param[in] func Device function symbol
+     @param[in] tp TuneParam containing the launch parameters
+     @param[in] arg Host address of argument struct
+     @param[in] stream Stream identifier
+  */
+  qudaError_t qudaLaunchKernel(const void *func, const TuneParam &tp, const qudaStream_t &stream, const void *arg);
 
   class TunableKernel : public Tunable
   {
