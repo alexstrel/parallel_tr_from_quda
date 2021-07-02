@@ -6,11 +6,7 @@
 namespace quda
 {
   // explicit instantiation list for transform_reduce
-  template float transform_reduce<float, float, int, identity<float>, plus<float>>(
-    QudaFieldLocation, float const *, int, identity<float>, float, plus<float>);
-
-  template void transform_reduce<float, float, int, identity<float>, plus<float>>(
-    QudaFieldLocation, std::vector<float> &, std::vector<float *> const &, int, identity<float>,
-    float, plus<float>);   
+  template float transform_reduce<QudaFieldLocation, float, int, plus<float>, identity<float>>(
+    QudaFieldLocation&, int, int, float, plus<float>, identity<float>);
 
 } // namespace quda

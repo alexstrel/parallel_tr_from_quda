@@ -5,31 +5,31 @@
 
 namespace quda {
 
-  template <typename reduce_t, typename T, typename count_t, typename transformer, typename reducer_>
+
+  template <typename reduce_t, int n_batch_, typename reducer_, typename transformer_>
   struct TransformReduceArg : public ReduceArg<reduce_t> {
     using reducer = reducer_;
+    using transformer = transformer_;
     static constexpr int n_batch_max = 8;
-    const T *v[n_batch_max];
-    count_t n_items;
+    int n_items;
     int n_batch;
     reduce_t init_value;
-    transformer h;
     reducer r;
+    transformer h;
 
-    TransformReduceArg(const std::vector<T *> &v, count_t n_items, transformer h, reduce_t init_value, reducer r) :
-      ReduceArg<reduce_t>(v.size()),
+    TransformReduceArg(int n_items, reduce_t init_value, reducer r, transformer h) :
+      ReduceArg<reduce_t>(n_batch_),
       n_items(n_items),
-      n_batch(v.size()),
+      n_batch(n_batch_),
       init_value(init_value),
-      h(h),
-      r(r)
+      r(r),
+      h(h)      
     {
       if (n_batch > n_batch_max) errorQuda("Requested batch %d greater than max supported %d", n_batch, n_batch_max);
-      if (n_items > std::numeric_limits<count_t>::max())
+      if (n_items > std::numeric_limits<int>::max())
         errorQuda("Requested size %lu greater than max supported %lu",
-                  (uint64_t)n_items, (uint64_t)std::numeric_limits<count_t>::max());
+                  (uint64_t)n_items, (uint64_t)std::numeric_limits<int>::max());
       this->threads = dim3(n_items, n_batch, 1);
-      memcpy(this->v, v.data(), v.size() * sizeof(T*));
     }
 
     __device__ __host__ reduce_t init() const { return init_value; }
@@ -47,10 +47,9 @@ namespace quda {
 
     __device__ __host__ inline reduce_t operator()(reduce_t a, reduce_t b) const { return arg.r(a, b); }
 
-    __device__ __host__ inline reduce_t operator()(reduce_t &value, count_t i, int j, int)
+    __device__ __host__ inline reduce_t operator()(reduce_t &value, count_t i, int j, int)//j is a batch indx
     {
-      auto v = arg.v[j];
-      auto t = arg.h(v[i]);
+      auto t = arg.h(i, j);
       return arg.r(t, value);
     }
   };

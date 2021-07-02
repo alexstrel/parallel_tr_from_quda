@@ -3,87 +3,70 @@
 #include <transform_reduce.h>
 #include <tunable_reduction.h>
 #include <kernels/transform_reduce.cuh>
+#include <array>
 
 namespace quda
 {
 
-  template <typename reduce_t, typename T, typename count_t, typename transformer, typename reducer>
+  template <typename policy_t, typename reduce_t, int n_batch_, typename reducer, typename transformer>
   class TransformReduce : TunableMultiReduction<1>
   {
-    using Arg = TransformReduceArg<reduce_t, T, count_t, transformer, reducer>;
-    QudaFieldLocation location;
+    using Arg = TransformReduceArg<reduce_t, n_batch_, reducer, transformer>;
+    
+    policy_t policy;
     std::vector<reduce_t> &result;
-    const std::vector<T *> &v;
-    count_t n_items;
-    transformer &h;
+    int n_items;
     reduce_t init;
-    reducer &r;
+    reducer r;
+    transformer h;        
 
     bool tuneSharedBytes() const { return false; }
 
     void initTuneParam(TuneParam &param) const
     {
       Tunable::initTuneParam(param);
-      param.grid.y = v.size();
+      param.grid.y = n_batch_;
     }
 
   public:
-    TransformReduce(QudaFieldLocation location, std::vector<reduce_t> &result, const std::vector<T *> &v, count_t n_items,
-                    transformer &h, reduce_t init, reducer &r) :
-      TunableMultiReduction(n_items, v.size(), location),
-      location(location),
+  
+    TransformReduce(policy_t &policy, std::vector<reduce_t> &result, int n_items, reduce_t init, reducer r, transformer h) :
+      TunableMultiReduction(n_items, n_batch_, policy),//policy keeps location
+      policy(policy),
       result(result),
-      v(v),
       n_items(n_items),
-      h(h),
       init(init),
-      r(r)
+      r(r),
+      h(h)      
     {
       strcpy(aux, "batch_size=");
-      u32toa(aux + 11, v.size());
+      u32toa(aux + 11, n_batch_);
       apply(device::get_default_stream());
     }
 
     void apply(const qudaStream_t &stream)
     {
       TuneParam tp = tuneLaunch(*this, getTuning(), getVerbosity());
-      Arg arg(v, n_items, h, init, r);
+      //
+      Arg arg(n_items, init, r, h);
       launch<transform_reducer, true>(result, tp, stream, arg);
     }
 
-    long long bytes() const { return v.size() * n_items * sizeof(T); }
+    long long bytes() const { return nbatch * n_items * sizeof(reduce_t); }//need to deduce from h
   };
 
-  template <typename reduce_t, typename T, typename count_t, typename transformer, typename reducer>
-  void transform_reduce(QudaFieldLocation location, std::vector<reduce_t> &result, const std::vector<T *> &v, count_t n_items,
-                        transformer h, reduce_t init, reducer r)
+  template <typename policy_t, typename reduce_t, typename count_t, typename reducer, typename transformer>
+  reduce_t transform_reduce(policy_t &policy, count_t begin_it, count_t end_it, reduce_t init, reducer r, transformer h)
   {
-    if (result.size() != v.size()) errorQuda("result %lu and input %lu set sizes do not match", result.size(), v.size());
-    TransformReduce<reduce_t, T, count_t, transformer, reducer> reduce(location, result, v, n_items, h, init, r);
-  }
-
-  template <typename reduce_t, typename T, typename count_t, typename transformer, typename reducer>
-  reduce_t transform_reduce(QudaFieldLocation location, const T *v, count_t n_items, transformer h, reduce_t init, reducer r)
-  {
+    constexpr int n_batch = 1;
     std::vector<reduce_t> result = {0.0};
-    std::vector<const T *> v_ = {v};
-    transform_reduce(location, result, v_, n_items, h, init, r);
-    return result[0];
-  }
+    const int n_items = end_it - begin_it;
 
-  template <typename reduce_t, typename T, typename count_t, typename transformer, typename reducer>
-  void reduce(QudaFieldLocation location, std::vector<reduce_t> &result, const std::vector<T *> &v, count_t n_items,
-              reduce_t init, reducer r)
-  {
-    //transform_reduce(location, result, v, n_items, identity<T>(), init, r);
-  }
-
-  template <typename reduce_t, typename T, typename count_t, typename reducer>
-  reduce_t reduce(QudaFieldLocation location, const T *v, count_t n_items, reduce_t init, reducer r)
-  {
-    std::vector<reduce_t> result = {0.0};
-    std::vector<const T *> v_ = {v};
-    //transform_reduce(location, result, v_, n_items, identity<T>(), init, r);
+    TransformReduce<policy_t, reduce_t, n_batch, reducer, transformer> transformReducer(policy, result, n_items, init, r, h);
+    
+    //if constexpr (!is_async) policy.get_queue().wait();
+    
     return result[0];
-  }
+  }  
+
 } // namespace quda
