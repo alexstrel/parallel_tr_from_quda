@@ -1,4 +1,5 @@
 #pragma once
+#include <iterators.h>
 #include <reduce_helper.h>
 #include <transform_reduce.h>
 #include <tunable_reduction.h>
@@ -62,6 +63,7 @@ namespace quda
     std::vector<reduce_t> result = {0.0};
     const int n_items = end_it - begin_it;
 
+    printf("==> %d <==\n", n_items );
     TransformReduce<policy_t, reduce_t, n_batch, reducer, transformer> transformReducer(policy, result, n_items, init, r, h);
     
     //if constexpr (!is_async) policy.get_queue().wait();

@@ -13,49 +13,10 @@
 #include <device.h>
 #include <timer.h>
 #include <transform_reduce.h>
+#include <iterators.h>
 //
 #include <reducer.h>
 #include <transformer.h>
-
-
-template<typename Tp>
-struct AlignedAllocator {
-   public:
-
-     typedef Tp value_type;
-
-     AlignedAllocator () {};
-
-     AlignedAllocator(const AlignedAllocator&) { }
-
-     template<typename Tp1> constexpr AlignedAllocator(const AlignedAllocator<Tp1>&) { }
-
-     ~AlignedAllocator() { }
-
-     Tp* address(Tp& x) const { return &x; }
-
-     std::size_t  max_size() const throw() { return size_t(-1) / sizeof(Tp); }
-
-     [[nodiscard]] Tp* allocate(std::size_t n){
-
-       Tp* ptr = nullptr;
-       auto err = cudaMallocManaged((void **)&ptr,n*sizeof(Tp));
-
-       if( err != cudaSuccess ) {
-         ptr = (Tp *) NULL;
-         std::cerr << " cudaMallocManaged failed for " << n*sizeof(Tp) << " bytes " <<cudaGetErrorString(err)<< std::endl;
-         //assert(0);
-       }
-
-       return ptr;
-     }
-
-     void deallocate( Tp* p, std::size_t n) noexcept {
-       cudaFree((void *)p);
-       return;
-     }
-};
-
 
 std::array<int, 4> gridsize_from_cmdline = {1, 1, 1, 1};
 int rank_order = 0;//col => 0, row => 1
@@ -209,10 +170,10 @@ void finalizeComms()
 int main(int argc, char **argv) {
    //
    profileInit2End.TPSTART(QUDA_PROFILE_TOTAL);
-#if 1      
+
    profileInit.TPSTART(QUDA_PROFILE_TOTAL);
    profileInit.TPSTART(QUDA_PROFILE_INIT);
-#endif
+
    std::cout << "Begin init: " << std::endl;
    initComms(argc, argv, gridsize_from_cmdline);
    
@@ -229,20 +190,20 @@ int main(int argc, char **argv) {
 
    quda::reducer::init();
    std::cout << "..done." << std::endl;   
-#if 1
+
    profileInit.TPSTOP(QUDA_PROFILE_INIT);
    profileInit.TPSTOP(QUDA_PROFILE_TOTAL);
-#endif
+
    
    constexpr int N = 1024*1024;	
    //
-   using alloc = AlignedAllocator<float>;
+   using alloc = quda::AlignedAllocator<float>;
    std::vector<float, alloc> x(N, 1.0);
-   //
+
    QudaFieldLocation location = QUDA_CUDA_FIELD_LOCATION;
    //
-   std::cout << "Begin transform reduce:: " << std::endl;
-   float result = quda::transform_reduce(location, 0, N, 0.0f, quda::plus<float>(), quda::identity<float>(x.data()));  
+   float result = quda::transform_reduce(location, x.begin(), x.end(), 0.0f, quda::plus<float>(), quda::identity<float>(x.data()));  
+   //float result = quda::transform_reduce(location, 0, N, 0.0f, quda::plus<float>(), quda::identity<float>(x.data()));
    //
    std::cout << std::fixed << result << std::endl;
    

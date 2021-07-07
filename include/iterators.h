@@ -1,6 +1,49 @@
 #pragma once
+#include <limits>
+#include <stdexcept>
+#include <iostream>
+#include <iterator>
 
 namespace quda{
+
+template<typename Tp>
+struct AlignedAllocator {
+   public:
+
+     typedef Tp value_type;
+
+     AlignedAllocator () {};
+
+     AlignedAllocator(const AlignedAllocator&) { }
+
+     template<typename Tp1> constexpr AlignedAllocator(const AlignedAllocator<Tp1>&) { }
+
+     ~AlignedAllocator() { }
+
+     Tp* address(Tp& x) const { return &x; }
+
+     std::size_t  max_size() const throw() { return size_t(-1) / sizeof(Tp); }
+
+     [[nodiscard]] Tp* allocate(std::size_t n){
+
+       Tp* ptr = nullptr;
+       auto err = cudaMallocManaged((void **)&ptr,n*sizeof(Tp));
+
+       if( err != cudaSuccess ) {
+         ptr = (Tp *) NULL;
+         std::cerr << " cudaMallocManaged failed for " << n*sizeof(Tp) << " bytes " <<cudaGetErrorString(err)<< std::endl;
+         //assert(0);
+       }
+
+       return ptr;
+     }
+
+     void deallocate( Tp* p, std::size_t n) noexcept {
+       cudaFree((void *)p);
+       return;
+     }
+};
+
   
 template <typename IntType>
 class counting_iterator {
@@ -8,7 +51,7 @@ class counting_iterator {
 public:
   using value_type = IntType;
   using difference_type = typename std::make_signed<IntType>::type;
-  using pointer = IntType*;
+  using pointer   = IntType*;
   using reference = IntType&;
   using iterator_category = std::random_access_iterator_tag;
 
