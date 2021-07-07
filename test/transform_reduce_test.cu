@@ -199,13 +199,18 @@ int main(int argc, char **argv) {
    //
    using alloc = quda::AlignedAllocator<float>;
    std::vector<float, alloc> x(N, 1.0);
+   std::vector<float, alloc> y(N, 1.0);   
 
    QudaFieldLocation location = QUDA_CUDA_FIELD_LOCATION;
    //
    float result = quda::transform_reduce(location, x.begin(), x.end(), 0.0f, quda::plus<float>(), quda::identity<float>(x.data()));  
+   //
+   float a = 3.0;
+   float result2= quda::transform_reduce(location, x.begin(), x.end(), 0.0f, quda::plus<float>(), quda::axpyDot<float>(a, x.data(), y.data()));     
    //float result = quda::transform_reduce(location, 0, N, 0.0f, quda::plus<float>(), quda::identity<float>(x.data()));
    //
    std::cout << std::fixed << result << std::endl;
+   std::cout << std::fixed << result2<< std::endl;   
    
    quda::reducer::destroy();  
 //   
