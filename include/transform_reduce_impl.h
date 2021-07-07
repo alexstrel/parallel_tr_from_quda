@@ -52,7 +52,7 @@ namespace quda
       launch<transform_reducer, true>(result, tp, stream, arg);
     }
 
-    long long bytes() const { return nbatch * n_items * sizeof(reduce_t); }//need to deduce from h
+    long long bytes() const { return n_batch_ * n_items * sizeof(reduce_t); }//need to deduce from h
   };
 
   template <typename policy_t, typename reduce_t, typename count_t, typename reducer, typename transformer>
