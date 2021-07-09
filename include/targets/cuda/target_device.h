@@ -18,7 +18,7 @@ namespace quda {
 
     // nvc++: run-time dispatch using if target
     template <template <bool, typename ...> class f, typename ...Args>
-    __host__ __device__ auto dispatch(Args &&... args)
+    auto dispatch(Args &&... args)
     {
       if target (nv::target::is_device) {
         return f<true>()(args...);
@@ -29,15 +29,11 @@ namespace quda {
 
 #else
 
-    // nvcc or clang: compile-time dispatch
+    // compile-time dispatch
     template <template <bool, typename ...> class f, typename ...Args>
-      __host__ __device__ auto dispatch(Args &&... args)
+    auto dispatch(Args &&... args)
     {
-#ifdef __CUDA_ARCH__
-      return f<true>()(args...);
-#else
       return f<false>()(args...);
-#endif
     }
 
 #endif
@@ -49,7 +45,7 @@ namespace quda {
        @brief Helper function that returns if the current execution
        region is on the device
     */
-    __device__ __host__ inline bool is_device() { return dispatch<is_device_impl>(); }
+    inline bool is_device() { return dispatch<is_device_impl>(); }
 
 
     template <bool is_device> struct is_host_impl { constexpr bool operator()() { return true; } };
@@ -59,7 +55,7 @@ namespace quda {
        @brief Helper function that returns if the current execution
        region is on the host
     */
-    __device__ __host__ inline bool is_host() { return dispatch<is_host_impl>(); }
+    inline bool is_host() { return dispatch<is_host_impl>(); }
 
 
     template <bool is_device> struct block_dim_impl { dim3 operator()() { return dim3(1, 1, 1); } };
@@ -72,7 +68,7 @@ namespace quda {
        dimensions.  On CUDA this returns the intrinsic blockDim,
        whereas on the host this returns (1, 1, 1).
     */
-    __device__ __host__ inline dim3 block_dim() { return dispatch<block_dim_impl>(); }
+    inline dim3 block_dim() { return dispatch<block_dim_impl>(); }
 
 
     template <bool is_device> struct grid_dim_impl { dim3 operator()() { return dim3(1, 1, 1); } };
@@ -85,7 +81,7 @@ namespace quda {
        CUDA this returns the intrinsic blockDim, whereas on the host
        this returns (1, 1, 1).
     */
-    __device__ __host__ inline dim3 grid_dim() { return dispatch<grid_dim_impl>(); }
+    inline dim3 grid_dim() { return dispatch<grid_dim_impl>(); }
 
 
     template <bool is_device> struct block_idx_impl { dim3 operator()() { return dim3(0, 0, 0); } };
@@ -98,7 +94,7 @@ namespace quda {
        thread block.  On CUDA this returns the intrinsic
        blockIdx, whereas on the host this just returns (0, 0, 0).
     */
-    __device__ __host__ inline dim3 block_idx() { return dispatch<block_idx_impl>(); }
+    inline dim3 block_idx() { return dispatch<block_idx_impl>(); }
 
 
     template <bool is_device> struct thread_idx_impl { dim3 operator()() { return dim3(0, 0, 0); } };
@@ -111,7 +107,7 @@ namespace quda {
        thread block.  On CUDA this returns the intrinsic
        threadIdx, whereas on the host this just returns (0, 0, 0).
     */
-    __device__ __host__ inline dim3 thread_idx() { return dispatch<thread_idx_impl>(); }
+    inline dim3 thread_idx() { return dispatch<thread_idx_impl>(); }
 
   }
 

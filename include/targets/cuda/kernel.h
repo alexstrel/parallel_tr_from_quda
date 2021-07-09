@@ -1,12 +1,12 @@
 #pragma once
 
-#include <target_device.h>
+#include <target_device.h> //got nvcpp headers
 #include <kernel_helper.h>
 
 namespace quda {
 
   template <template <typename> class Functor, typename Arg, bool grid_stride = false>
-  __forceinline__ __device__ void Kernel1D_impl(const Arg &arg)
+  __forceinline__ void Kernel1D_impl(const Arg &arg)
   {
     Functor<Arg> f(arg);
 
@@ -26,7 +26,7 @@ namespace quda {
 
 
   template <template <typename> class Functor, typename Arg, bool grid_stride = false>
-  __forceinline__ __device__ void Kernel2D_impl(const Arg &arg)
+  __forceinline__ void Kernel2D_impl(const Arg &arg)
   {
     Functor<Arg> f(arg);
 
@@ -48,7 +48,7 @@ namespace quda {
 
 
   template <template <typename> class Functor, typename Arg, bool grid_stride = false>
-  __forceinline__ __device__ void Kernel3D_impl(const Arg &arg)
+  __forceinline__ void Kernel3D_impl(const Arg &arg)
   {
     Functor<Arg> f(arg);
 

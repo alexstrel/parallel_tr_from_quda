@@ -1,5 +1,5 @@
 # add target specific files / options
-target_sources(quda_cpp PRIVATE transform_reduce.cu)
+target_sources(quda_cpp PRIVATE transform_reduce.cpp)
 
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/fatbin.ld"
 [=[

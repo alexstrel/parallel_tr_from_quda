@@ -32,7 +32,7 @@ namespace quda {
       this->threads = dim3(n_items, n_batch, 1);
     }
 
-    __device__ __host__ reduce_t init() const { return init_value; }
+    reduce_t init() const { return init_value; }
   };
 
   template <typename Arg> struct transform_reducer {
@@ -45,9 +45,9 @@ namespace quda {
 
     static constexpr bool do_sum = Arg::reducer::do_sum;
 
-    __device__ __host__ inline reduce_t operator()(reduce_t a, reduce_t b) const { return arg.r(a, b); }
+    inline reduce_t operator()(reduce_t a, reduce_t b) const { return arg.r(a, b); }
 
-    __device__ __host__ inline reduce_t operator()(reduce_t &value, count_t i, int j, int)//j is a batch indx
+    inline reduce_t operator()(reduce_t &value, count_t i, int j, int)//j is a batch indx
     {
       auto t = arg.h(i, j);
       return arg.r(t, value);

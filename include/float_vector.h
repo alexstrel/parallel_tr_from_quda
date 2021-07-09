@@ -12,22 +12,22 @@
 
 namespace quda {
 
-  __host__ __device__ inline double2 operator+(const double2 &x, const double2 &y)
+  inline double2 operator+(const double2 &x, const double2 &y)
   {
     return make_double2(x.x + y.x, x.y + y.y);
   }
 
-  __host__ __device__ inline double3 operator+(const double3 &x, const double3 &y)
+  inline double3 operator+(const double3 &x, const double3 &y)
   {
     return make_double3(x.x + y.x, x.y + y.y, x.z + y.z);
   }
 
-  __host__ __device__ inline double4 operator+(const double4 &x, const double4 &y)
+  inline double4 operator+(const double4 &x, const double4 &y)
   {
     return make_double4(x.x + y.x, x.y + y.y, x.z + y.z, x.w + y.w);
   }
 
-  __host__ __device__ inline float2 operator+(const float2 &x, const float2 &y) {
+  inline float2 operator+(const float2 &x, const float2 &y) {
     return make_float2(x.x + y.x, x.y + y.y);
   }
 
@@ -99,19 +99,19 @@ namespace quda {
   }
 #endif
 
-  template <typename T> __device__ __host__ inline T zero() { return static_cast<T>(0); }
-  template<> __device__ __host__ inline double2 zero() { return make_double2(0.0, 0.0); }
-  template<> __device__ __host__ inline double3 zero() { return make_double3(0.0, 0.0, 0.0); }
-  template<> __device__ __host__ inline double4 zero() { return make_double4(0.0, 0.0, 0.0, 0.0); }
+  template <typename T> inline T zero() { return static_cast<T>(0); }
+  template<> inline double2 zero() { return make_double2(0.0, 0.0); }
+  template<> inline double3 zero() { return make_double3(0.0, 0.0, 0.0); }
+  template<> inline double4 zero() { return make_double4(0.0, 0.0, 0.0, 0.0); }
 
-  template<> __device__ __host__ inline float2 zero() { return make_float2(0.0, 0.0); }
-  template<> __device__ __host__ inline float3 zero() { return make_float3(0.0, 0.0, 0.0); }
-  template<> __device__ __host__ inline float4 zero() { return make_float4(0.0, 0.0, 0.0, 0.0); }
+  template<> inline float2 zero() { return make_float2(0.0, 0.0); }
+  template<> inline float3 zero() { return make_float3(0.0, 0.0, 0.0); }
+  template<> inline float4 zero() { return make_float4(0.0, 0.0, 0.0, 0.0); }
 
 #ifdef QUAD_SUM
-  template<> __device__ __host__ inline doubledouble zero() { return doubledouble(); }
-  template<> __device__ __host__ inline doubledouble zero() { return doubledouble2(); }
-  template<> __device__ __host__ inline doubledouble zero() { return doubledouble3(); }
+  template<> inline doubledouble zero() { return doubledouble(); }
+  template<> inline doubledouble zero() { return doubledouble2(); }
+  template<> inline doubledouble zero() { return doubledouble3(); }
 #endif
 
   /**
@@ -120,15 +120,15 @@ namespace quda {
   template <typename scalar_, int n> struct vector_type {
     using scalar = scalar_;
     scalar data[n];
-    __device__ __host__ inline scalar &operator[](int i) { return data[i]; }
-    __device__ __host__ inline const scalar &operator[](int i) const { return data[i]; }
-    __device__ __host__ inline static constexpr int size() { return n; }
-    __device__ __host__ inline void operator+=(const vector_type &a)
+    inline scalar &operator[](int i) { return data[i]; }
+    inline const scalar &operator[](int i) const { return data[i]; }
+    inline static constexpr int size() { return n; }
+    inline void operator+=(const vector_type &a)
     {
 #pragma unroll
       for (int i = 0; i < n; i++) data[i] += a[i];
     }
-    __device__ __host__ vector_type()
+    vector_type()
     {
 #pragma unroll
       for (int i = 0; i < n; i++) data[i] = zero<scalar>();
@@ -155,7 +155,7 @@ namespace quda {
     return output;
   }
 
-  template <typename scalar, int n> __device__ __host__ inline vector_type<scalar, n> zero()
+  template <typename scalar, int n> inline vector_type<scalar, n> zero()
   {
     vector_type<scalar, n> v;
 #pragma unroll
@@ -164,7 +164,7 @@ namespace quda {
   }
 
   template <typename scalar, int n>
-  __device__ __host__ inline vector_type<scalar, n> operator+(const vector_type<scalar, n> &a,
+  inline vector_type<scalar, n> operator+(const vector_type<scalar, n> &a,
                                                               const vector_type<scalar, n> &b)
   {
     vector_type<scalar, n> c;
