@@ -34,6 +34,7 @@ void comm_create_neighbor_memory(void *remote[QUDA_MAX_DIM][2], void *local)
   // handles for obtained ghost pointers
   cudaIpcMemHandle_t remote_handle[2][QUDA_MAX_DIM];
 
+#ifndef NVSHMEM_COMMS
   for (int dim=0; dim<4; ++dim) {
     if (comm_dim(dim)==1) continue;
     for (int dir=0; dir<2; ++dir) {
@@ -48,8 +49,8 @@ void comm_create_neighbor_memory(void *remote[QUDA_MAX_DIM][2], void *local)
       }
       // now send
       cudaIpcMemHandle_t local_handle;
-      CHECK_CUDA_ERROR(cudaIpcGetMemHandle(&local_handle, local));
       if (comm_peer2peer_enabled(dir,dim)) {
+        CHECK_CUDA_ERROR(cudaIpcGetMemHandle(&local_handle, local));
         sendHandle = comm_declare_send_relative(&local_handle, dim, disp, sizeof(local_handle));
       }
       if (receiveHandle) comm_start(receiveHandle);
@@ -62,6 +63,7 @@ void comm_create_neighbor_memory(void *remote[QUDA_MAX_DIM][2], void *local)
       if (receiveHandle) comm_free(receiveHandle);
     }
   }
+#endif
 
   // open the remote memory handles and set the send ghost pointers
   for (int dim=0; dim<4; ++dim) {
