@@ -3,6 +3,7 @@
 #include <unistd.h> // for gethostname()
 #include <assert.h>
 #include <limits>
+#include <stack>
 
 #include <quda_internal.h>
 #include <comm_quda.h>
@@ -13,7 +14,7 @@
 #include <algorithm>
 #include <numeric>
 
-#if defined(MPI_COMMS)
+#if defined(MPI_COMMS) 
 #include <mpi.h>
 #endif
 
@@ -614,20 +615,8 @@ struct Communicator {
 
   bool comm_deterministic_reduce() { return use_deterministic_reduce; }
 
-  bool globalReduce = true;
+  std::stack<bool> globalReduce;
   bool asyncReduce = false;
-
-  void reduceMaxDouble(double &max) { comm_allreduce_max(&max); }
-
-  void reduceDouble(double &sum)
-  {
-    if (globalReduce) comm_allreduce(&sum);
-  }
-
-  void reduceDoubleArray(double *sum, const int len)
-  {
-    if (globalReduce) comm_allreduce_array(sum, len);
-  }
 
   int commDim(int dir) { return comm_dim(dir); }
 
@@ -639,18 +628,25 @@ struct Communicator {
 
   void commDimPartitionedReset() { comm_dim_partitioned_reset(); }
 
-  bool commGlobalReduction() { return globalReduce; }
+  bool commGlobalReduction() { return globalReduce.top(); }
 
-  void commGlobalReductionSet(bool global_reduction) { globalReduce = global_reduction; }
+  void commGlobalReductionPush(bool global_reduction) { globalReduce.push(global_reduction); }
+
+  void commGlobalReductionPop() { globalReduce.pop(); }
+
+  void reduceMaxDouble(double &max) { if (commGlobalReduction()) comm_allreduce_max(&max); }
+
+  void reduceDouble(double &sum) { if (commGlobalReduction()) comm_allreduce(&sum); }
+
+  void reduceDoubleArray(double *sum, const int len) { if (commGlobalReduction()) comm_allreduce_array(sum, len); }
 
   bool commAsyncReduction() { return asyncReduce; }
 
   void commAsyncReductionSet(bool async_reduction) { asyncReduce = async_reduction; }
 
-#if defined(QMP_COMMS) || defined(MPI_COMMS)
+#if defined(MPI_COMMS)
   MPI_Comm MPI_COMM_HANDLE;
 #endif
-
 
   int rank = -1;
   int size = -1;
@@ -735,6 +731,8 @@ struct Communicator {
   void comm_allreduce_array(double *data, size_t size);
 
   void comm_allreduce_max_array(double *data, size_t size);
+
+  void comm_allreduce_min_array(double *data, size_t size);
 
   void comm_allreduce_int(int *data);
 

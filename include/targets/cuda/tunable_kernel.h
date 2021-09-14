@@ -5,6 +5,10 @@
 #include <kernel_helper.h>
 #include <kernel.h>
 
+#ifdef JITIFY
+#include <jitify_helper.h>
+#endif
+
 namespace quda {
 
   /**
@@ -29,7 +33,11 @@ namespace quda {
     std::enable_if_t<device::use_kernel_arg<Arg>(), qudaError_t>
       launch_device(const kernel_t &kernel, const TuneParam &tp, const qudaStream_t &stream, const Arg &arg)
     {
+#ifdef JITIFY
+      launch_error = launch_jitify<Functor, grid_stride, Arg>(kernel.name, tp, stream, arg);
+#else
       launch_error = qudaLaunchKernel(kernel.func, tp, stream, static_cast<const void *>(&arg));
+#endif
       return launch_error;
     }
 
@@ -37,9 +45,14 @@ namespace quda {
     std::enable_if_t<!device::use_kernel_arg<Arg>(), qudaError_t>
       launch_device(const kernel_t &kernel, const TuneParam &tp, const qudaStream_t &stream, const Arg &arg)
     {
+#ifdef JITIFY
+      // note we do the copy to constant memory after the kernel has been compiled in launch_jitify
+      launch_error = launch_jitify<Functor, grid_stride, Arg>(kernel.name, tp, stream, arg);
+#else
       static_assert(sizeof(Arg) <= device::max_constant_size(), "Parameter struct is greater than max constant size");
       qudaMemcpyAsync(device::get_constant_buffer<Arg>(), &arg, sizeof(Arg), qudaMemcpyHostToDevice, stream);
       launch_error = qudaLaunchKernel(kernel.func, tp, stream, static_cast<const void *>(&arg));
+#endif
       return launch_error;
     }
 

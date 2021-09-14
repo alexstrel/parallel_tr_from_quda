@@ -91,7 +91,8 @@ namespace quda
        reduction has completed; required if the same ReduceArg
        instance will be used for multiple reductions.
     */
-    ReduceArg(int n_reduce = 1, bool reset = false) :
+    ReduceArg(dim3 threads, int n_reduce = 1, bool reset = false) :
+      kernel_param<use_kernel_arg>(threads),
       launch_error(QUDA_ERROR_UNINITIALIZED),
       n_reduce(n_reduce),
       reset(reset),
@@ -243,6 +244,9 @@ namespace quda
           } else { // write to device memory
             arg.partial[idx].store(sum, cuda::std::memory_order_relaxed);
           }
+          // TODO in principle we could remove this final atomic store
+          // if we use a sense reversal barrier, avoiding the need to
+          // reset the count at the end
           arg.count[idx].store(0, cuda::std::memory_order_relaxed); // set to zero for next time
         }
       }
